@@ -7,7 +7,7 @@ const mysql = require('mysql2')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const config = require('../../config');
-// const VerifyToken = require('./VerifyToken');
+const VerifyToken = require('./verifyToken');
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -34,7 +34,7 @@ router.post('/register', function (req, res) {
             User.create({ name: name, email: email, password: password })
                 .then((user) => {
                     // create a token
-                    var token = jwt.sign({ name: user.name , id:user.id}, config.secret, {
+                    var token = jwt.sign({ name: user.name, id: user.id }, config.secret, {
                         expiresIn: 86400 // expires in 24 hours
                     });
                     res.status(200).send({ auth: true, token: token });
@@ -44,7 +44,7 @@ router.post('/register', function (req, res) {
 
         }
         // { id: User._id }
-    }).catch(()=>{
+    }).catch(() => {
         res.send("User created success");
     })
 
@@ -67,22 +67,28 @@ router.post('/register', function (req, res) {
 
 
 
-router.get('/me', function (req, res) {
-    var token = req.headers['x-access-token'];
-    if (!token) return res.status(401).send({ auth: false, message: 'No token provided.' });
 
-    jwt.verify(token, config.secret, function (err, decoded) {
-        if (err) return res.status(500).send({ auth: false, message: 'Failed to authenticate token.' });
+router.get('/me', VerifyToken,  function (req, res) {
 
-        res.status(200).send(decoded);
-    });
-});
+     User.findByPk(req.userId)
+        .then((user) => {
+            if (user) {
+                res.status(200).json({
+                    message: "Token valid", data: user
+                });
+                return res.send(data);
+            }
+            if (!user) res.status(404).json("No user found.");
+        })
+        .catch((error) => {
+            //  res.status(500).send("There was a problem finding the user.");
+        })
 
-
+})
 
 router.get('/', (req, res) => {
     res.status(200).json({
-        status: 1,
+       
         message: 'Home page'
     });
 })
