@@ -10,7 +10,7 @@ const app = express()
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
-const sequelize = new Sequelize('experiment', 'root', '', {
+const sequelize = new Sequelize('experiment', 'root', 'root', {
     host: 'localhost',
     dialect: 'mysql'
 
@@ -40,8 +40,12 @@ const User = sequelize.define('Myauth', {
         allowNull: false
     },
     password: {
-        type: Sequelize.STRING(50),
+        type: Sequelize.STRING(150),
         allowNull: false
+    },
+    status:{
+        type:Sequelize.INTEGER,
+        defaultValue:1
     }
     
 
